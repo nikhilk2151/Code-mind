@@ -1,0 +1,5 @@
+hindsight-client
+hindsight-pydantic-ai
+pydantic-ai[groq]
+python-dotenv
+rich
