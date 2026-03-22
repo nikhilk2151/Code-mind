@@ -95,6 +95,11 @@ def serve_index():
     return HTMLResponse("<h1>index.html not found</h1>", status_code=404)
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "timestamp": time.time()}
+
+
 @app.post("/api/session/start")
 def session_start(req: StartSessionRequest):
     sess = get_or_create_session(req.user_id)
