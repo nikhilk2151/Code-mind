@@ -717,6 +717,17 @@
         if (!window.fbAuth) throw new Error("Firebase is still loading. Please wait a moment.");
         await window.fbApis.setPersistence(window.fbAuth, remember ? window.fbApis.browserLocalPersistence : window.fbApis.browserSessionPersistence);
         const cred = await window.fbApis.signInWithEmailAndPassword(window.fbAuth, email, password);
+        
+        // Check if email is verified
+        if (!cred.user.emailVerified) {
+          toast('❌ Please verify your email address before logging in. Check your inbox for the verification link.');
+          await window.fbApis.signOut(window.fbAuth); // Sign them out since they're not verified
+          document.getElementById('start-btn').disabled=false;
+          if(document.getElementById('signup-btn')) document.getElementById('signup-btn').disabled=false;
+          hideLoading();
+          return;
+        }
+        
         saveLogin(email, password, remember);
         await enterWorkspace(cred.user.uid);
       } catch (err) {
@@ -742,9 +753,15 @@
         if (!window.fbAuth) throw new Error("Firebase is still loading. Please wait.");
         await window.fbApis.setPersistence(window.fbAuth, remember ? window.fbApis.browserLocalPersistence : window.fbApis.browserSessionPersistence);
         const cred = await window.fbApis.createUserWithEmailAndPassword(window.fbAuth, email, password);
-        toast('🎉 Account successfully created!');
-        saveLogin(email, password, remember);
-        await enterWorkspace(cred.user.uid);
+        
+        // Send email verification
+        await cred.user.sendEmailVerification();
+        
+        toast('🎉 Account created! Please check your email and verify your account before logging in.');
+        // Don't automatically log them in - they need to verify email first
+        document.getElementById('start-btn').disabled=false;
+        if(document.getElementById('signup-btn')) document.getElementById('signup-btn').disabled=false;
+        hideLoading();
       } catch (err) {
         toast('❌ Signup Error: ' + err.message);
         document.getElementById('start-btn').disabled=false;
